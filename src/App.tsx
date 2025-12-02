@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import './App.css'
 import bustPattern from './assets/descarga-removebg-preview.png'
+import menuImage1 from './assets/juramento menu.jpeg'
+import menuImage2 from './assets/juramento menu2.jpeg'
 
 function App() {
   const [showWifiPassword, setShowWifiPassword] = useState(false)
-  const [showMesasMenu, setShowMesasMenu] = useState(false)
+  const [showMenuImages, setShowMenuImages] = useState(false)
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null)
   const [hasVisitedInstagram, setHasVisitedInstagram] = useState(false)
-  const [wifiPassword] = useState('Cafe2024!')
+  const [wifiPassword] = useState('Juramento2025!')
   const instagramUrl = 'https://www.instagram.com/el.juramento.hipocratico'
 
   const handleWifiClick = () => {
@@ -21,64 +24,57 @@ function App() {
     } else {
       setShowWifiPassword(!showWifiPassword)
     }
-    setShowMesasMenu(false)
   }
 
-  const handleMesasClick = () => {
-    setShowMesasMenu(!showMesasMenu)
-    setShowWifiPassword(false)
-  }
-
-  const handleMesaAction = (action: string) => {
-    alert(`Acción: ${action}`)
-    setShowMesasMenu(false)
+  const handleImageClick = (imageSrc: string) => {
+    setZoomedImage(imageSrc)
   }
 
   return (
     <div className="app-container">
       <div className="background-illustration">
         {/* Fila 1: Normal */}
-        <div 
+        <div
           className="pattern-row row-normal"
           style={{ backgroundImage: `url(${bustPattern})` }}
         ></div>
         {/* Fila 2: Volteada, desplazada */}
-        <div 
+        <div
           className="pattern-row row-flipped"
           style={{ backgroundImage: `url(${bustPattern})` }}
         ></div>
         {/* Fila 3: Normal */}
-        <div 
+        <div
           className="pattern-row row-normal"
           style={{ backgroundImage: `url(${bustPattern})` }}
         ></div>
         {/* Fila 4: Volteada, desplazada */}
-        <div 
+        <div
           className="pattern-row row-flipped"
           style={{ backgroundImage: `url(${bustPattern})` }}
         ></div>
       </div>
-      
+
       <div className="content-wrapper">
         <div className="title-section">
           <span className="title-small">EL</span>
           <h1 className="title-main">JURAMENTO</h1>
           <span className="title-small">HIPOCRATICO</span>
         </div>
-        
+
         <div className="main-buttons">
-          <button 
+          <button
             className="main-button wifi-button"
             onClick={handleWifiClick}
           >
             Contraseña WiFi
           </button>
-          
-          <button 
+
+          <button
             className="main-button mesas-button"
-            onClick={handleMesasClick}
+            onClick={() => setShowMenuImages(true)}
           >
-            Mesas
+            Menú
           </button>
         </div>
       </div>
@@ -92,7 +88,7 @@ function App() {
             </p>
             <div className="wifi-password">
               <span className="password-text">{wifiPassword}</span>
-              <button 
+              <button
                 className="copy-button"
                 onClick={() => {
                   navigator.clipboard.writeText(wifiPassword)
@@ -102,7 +98,7 @@ function App() {
                 📋 Copiar
               </button>
             </div>
-            <button 
+            <button
               className="close-button"
               onClick={() => setShowWifiPassword(false)}
             >
@@ -112,39 +108,51 @@ function App() {
         </div>
       )}
 
-      {showMesasMenu && (
-        <div className="mesas-menu">
-          <div className="menu-content">
-            <h2>Opciones de Mesa</h2>
-            <div className="mesa-actions">
-              <button 
-                className="action-button cuenta-button"
-                onClick={() => handleMesaAction('Pedir Cuenta')}
-              >
-                <span className="action-icon">🧾</span>
-                Pedir Cuenta
-              </button>
-              <button 
-                className="action-button mesero-button"
-                onClick={() => handleMesaAction('Llamar Mesero')}
-              >
-                <span className="action-icon">👋</span>
-                Llamar Mesero
-              </button>
-              <button 
-                className="action-button cancelar-button"
-                onClick={() => handleMesaAction('Cancelar')}
-              >
-                <span className="action-icon">❌</span>
-                Cancelar
-              </button>
+
+      {showMenuImages && (
+        <div className="menu-modal">
+          <div className="modal-content menu-images-content">
+            <h2>Nuestro Menú</h2>
+            <p className="zoom-hint">Haz clic en las imágenes para ampliar</p>
+            <div className="menu-images">
+              <img
+                src={menuImage1}
+                alt="Menú página 1"
+                className="menu-image clickable"
+                onClick={() => handleImageClick(menuImage1)}
+              />
+              <img
+                src={menuImage2}
+                alt="Menú página 2"
+                className="menu-image clickable"
+                onClick={() => handleImageClick(menuImage2)}
+              />
             </div>
-            <button 
+            <button
               className="close-button"
-              onClick={() => setShowMesasMenu(false)}
+              onClick={() => setShowMenuImages(false)}
             >
               Cerrar
             </button>
+          </div>
+        </div>
+      )}
+
+      {zoomedImage && (
+        <div className="zoom-modal" onClick={() => setZoomedImage(null)}>
+          <div className="zoom-content">
+            <button
+              className="zoom-close-button"
+              onClick={() => setZoomedImage(null)}
+            >
+              ✕
+            </button>
+            <img
+              src={zoomedImage}
+              alt="Menú ampliado"
+              className="zoomed-image"
+              onClick={(e) => e.stopPropagation()}
+            />
           </div>
         </div>
       )}
