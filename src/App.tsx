@@ -40,7 +40,7 @@ function App() {
   const [showMenuImages, setShowMenuImages] = useState(false)
   const [zoomedImage, setZoomedImage] = useState<string | null>(null)
 
-  const [wifiPassword] = useState('Juramento2025!')
+  const [wifiPassword] = useState('sabidulatte')
 
 
   // Estados de mesa
