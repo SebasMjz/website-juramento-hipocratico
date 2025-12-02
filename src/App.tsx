@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from './lib/supabase'
 import './App.css'
@@ -48,6 +48,13 @@ function App() {
   const [table, setTable] = useState<TableData | null>(null)
 
   const [socratesQuote, setSocratesQuote] = useState<string>('')
+
+  // Ref para acceder al estado actual de la mesa dentro del callback de suscripción
+  const tableRef = useRef<TableData | null>(null)
+
+  useEffect(() => {
+    tableRef.current = table
+  }, [table])
 
   useEffect(() => {
     if (tableId && !isNaN(tableId)) {
@@ -101,15 +108,23 @@ function App() {
             const newData = payload.new as TableData
             setTable(newData)
 
+            // Usar la referencia para obtener el estado anterior real
+            const currentTable = tableRef.current
+
             // Si needs_attention cambió de true a false, el mesero atendió
-            if (table?.needs_attention && !newData.needs_attention) {
+            // O si simplemente recibimos false y estábamos en estado 'calling'
+            if ((currentTable?.needs_attention && !newData.needs_attention) ||
+              (!newData.needs_attention && state === 'calling')) {
               setState('attended')
               // Volver a menu después de 5 segundos
               setTimeout(() => setState('menu'), 5000)
             } else if (newData.needs_attention) {
               setState('calling')
             } else {
-              setState('menu')
+              // Si no requiere atención y no venimos de calling, mostrar menú
+              if (state !== 'attended') {
+                setState('menu')
+              }
             }
           }
         )
@@ -160,16 +175,16 @@ function App() {
 
   const handleWifiClick = () => {
     if (!hasVisitedInstagram) {
-      // Guardar en localStorage para persistir si la página se recarga
+      // Guardar en localStorage inmediatamente
       localStorage.setItem('hasVisitedInstagram', 'true')
       setHasVisitedInstagram(true)
 
-      // Abrir Instagram en una nueva pestaña
-      window.open(instagramUrl, '_blank')
+      // Mostrar la contraseña PRIMERO para asegurar que la UI responda
+      setShowWifiPassword(true)
 
-      // Mostrar la contraseña
+      // Intentar abrir Instagram con un pequeño delay
       setTimeout(() => {
-        setShowWifiPassword(true)
+        window.open(instagramUrl, '_blank')
       }, 500)
     } else {
       setShowWifiPassword(true)
