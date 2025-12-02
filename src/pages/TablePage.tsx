@@ -45,7 +45,7 @@ function TablePage() {
                 .from('dining_tables')
                 .select('id, code, name, description, needs_attention')
                 .eq('qr_code', qrCode)
-                .single()
+                .maybeSingle()
 
             if (fetchError) throw fetchError
             if (!data) throw new Error('Mesa no encontrada')
