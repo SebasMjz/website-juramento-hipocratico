@@ -39,9 +39,9 @@ function App() {
   const [showWifiPassword, setShowWifiPassword] = useState(false)
   const [showMenuImages, setShowMenuImages] = useState(false)
   const [zoomedImage, setZoomedImage] = useState<string | null>(null)
-  const [hasVisitedInstagram, setHasVisitedInstagram] = useState(false)
+
   const [wifiPassword] = useState('Juramento2025!')
-  const instagramUrl = 'https://www.instagram.com/el.juramento.hipocratico'
+
 
   // Estados de mesa
   const [state, setState] = useState<PageState>(tableId ? 'loading' : 'menu')
@@ -145,15 +145,28 @@ function App() {
     setState('menu')
   }
 
+  const instagramUrl = 'https://www.instagram.com/el.juramento.hipocratico'
+
+  // Inicializar estado leyendo de localStorage
+  const [hasVisitedInstagram, setHasVisitedInstagram] = useState(() => {
+    return localStorage.getItem('hasVisitedInstagram') === 'true'
+  })
+
   const handleWifiClick = () => {
     if (!hasVisitedInstagram) {
-      window.open(instagramUrl, '_blank')
+      // Guardar en localStorage para persistir si la página se recarga
+      localStorage.setItem('hasVisitedInstagram', 'true')
       setHasVisitedInstagram(true)
+
+      // Abrir Instagram en una nueva pestaña
+      window.open(instagramUrl, '_blank')
+
+      // Mostrar la contraseña
       setTimeout(() => {
         setShowWifiPassword(true)
       }, 500)
     } else {
-      setShowWifiPassword(!showWifiPassword)
+      setShowWifiPassword(true)
     }
   }
 
