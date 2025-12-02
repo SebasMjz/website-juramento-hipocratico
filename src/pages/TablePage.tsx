@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import './TablePage.css'
 import bustPattern from '../assets/descarga-removebg-preview.png'
@@ -15,39 +15,39 @@ type TableData = {
 type PageState = 'loading' | 'error' | 'idle' | 'calling' | 'attended'
 
 function TablePage() {
-    const [searchParams] = useSearchParams()
-    const qrCode = searchParams.get('code')
+    const { id } = useParams<{ id: string }>()
+    const tableId = id ? parseInt(id, 10) : null
 
     const [state, setState] = useState<PageState>('loading')
     const [table, setTable] = useState<TableData | null>(null)
     const [error, setError] = useState<string>('')
 
     useEffect(() => {
-        if (!qrCode) {
-            setError('Código QR inválido')
+        if (!tableId || isNaN(tableId)) {
+            setError('ID de mesa inválido')
             setState('error')
             return
         }
 
         loadTable()
-    }, [qrCode])
+    }, [tableId])
 
     const loadTable = async () => {
         try {
             setState('loading')
 
-            // Autenticar anónimamente
-            const { error: authError } = await supabase.auth.signInAnonymously()
-            if (authError) throw authError
-
-            // Buscar la mesa por qr_code
+            // Buscar la mesa por ID (sin autenticación)
             const { data, error: fetchError } = await supabase
                 .from('dining_tables')
                 .select('id, code, name, description, needs_attention')
-                .eq('qr_code', qrCode)
+                .eq('id', tableId)
                 .maybeSingle()
 
-            if (fetchError) throw fetchError
+            if (fetchError) {
+                console.error('Supabase error:', fetchError)
+                throw fetchError
+            }
+
             if (!data) throw new Error('Mesa no encontrada')
 
             setTable(data)
@@ -101,7 +101,7 @@ function TablePage() {
             const { error } = await supabase
                 .from('dining_tables')
                 .update({ needs_attention: true })
-                .eq('qr_code', qrCode)
+                .eq('id', table.id)
 
             if (error) throw error
 
