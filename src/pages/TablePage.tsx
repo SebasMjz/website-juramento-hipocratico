@@ -12,7 +12,22 @@ type TableData = {
     needs_attention: boolean
 }
 
-type PageState = 'loading' | 'error' | 'idle' | 'calling' | 'attended'
+type PageState = 'loading' | 'error' | 'menu' | 'calling' | 'attended'
+
+// Frases de Sócrates
+const SOCRATES_QUOTES = [
+    "La vida no examinada no merece la pena ser vivida.",
+    "Solo sé que no sé nada.",
+    "El conocimiento es la única virtud y la ignorancia el único vicio.",
+    "La sabiduría comienza en la maravilla.",
+    "Conócete a ti mismo."
+]
+
+// Función para obtener una frase aleatoria
+const getRandomQuote = () => {
+    const randomIndex = Math.floor(Math.random() * SOCRATES_QUOTES.length)
+    return SOCRATES_QUOTES[randomIndex]
+}
 
 function TablePage() {
     const { id } = useParams<{ id: string }>()
@@ -21,6 +36,7 @@ function TablePage() {
     const [state, setState] = useState<PageState>('loading')
     const [table, setTable] = useState<TableData | null>(null)
     const [error, setError] = useState<string>('')
+    const [socratesQuote, setSocratesQuote] = useState<string>('')
 
     useEffect(() => {
         if (!tableId || isNaN(tableId)) {
@@ -51,7 +67,7 @@ function TablePage() {
             if (!data) throw new Error('Mesa no encontrada')
 
             setTable(data)
-            setState(data.needs_attention ? 'calling' : 'idle')
+            setState(data.needs_attention ? 'calling' : 'menu')
 
             // Suscribirse a cambios en tiempo real
             const channel = supabase
@@ -71,12 +87,12 @@ function TablePage() {
                         // Si needs_attention cambió de true a false, el mesero atendió
                         if (table?.needs_attention && !newData.needs_attention) {
                             setState('attended')
-                            // Volver a idle después de 5 segundos
-                            setTimeout(() => setState('idle'), 5000)
+                            // Volver a menu después de 5 segundos
+                            setTimeout(() => setState('menu'), 5000)
                         } else if (newData.needs_attention) {
                             setState('calling')
                         } else {
-                            setState('idle')
+                            setState('menu')
                         }
                     }
                 )
@@ -96,6 +112,8 @@ function TablePage() {
         if (!table) return
 
         try {
+            // Seleccionar frase aleatoria de Sócrates
+            setSocratesQuote(getRandomQuote())
             setState('calling')
 
             const { error } = await supabase
@@ -108,9 +126,12 @@ function TablePage() {
             setTable({ ...table, needs_attention: true })
         } catch (err) {
             console.error('Error calling waiter:', err)
-            alert('Error al llamar al mesero. Por favor, intenta de nuevo.')
-            setState('idle')
+            setState('menu')
         }
+    }
+
+    const handleBackToMenu = () => {
+        setState('menu')
     }
 
     if (state === 'loading') {
@@ -151,6 +172,82 @@ function TablePage() {
         )
     }
 
+    // Estado: MENU - Mostrar botones principales
+    if (state === 'menu') {
+        return (
+            <div className="table-page">
+                <div className="background-illustration">
+                    <div className="pattern-row row-normal" style={{ backgroundImage: `url(${bustPattern})` }}></div>
+                    <div className="pattern-row row-flipped" style={{ backgroundImage: `url(${bustPattern})` }}></div>
+                    <div className="pattern-row row-normal" style={{ backgroundImage: `url(${bustPattern})` }}></div>
+                    <div className="pattern-row row-flipped" style={{ backgroundImage: `url(${bustPattern})` }}></div>
+                </div>
+
+                <div className="content-wrapper">
+                    <div className="menu-container">
+                        <div className="title-section">
+                            <span className="title-small">E L</span>
+                            <h1 className="title-main">JURAMENTO</h1>
+                            <span className="title-subtitle">HIPOCRÁTICO</span>
+                        </div>
+
+                        <div className="menu-buttons">
+                            <button className="menu-button">
+                                CONTRASEÑA WIFI
+                            </button>
+                            <button className="menu-button">
+                                MENÚ
+                            </button>
+                            <button className="menu-button call-waiter" onClick={handleCallWaiter}>
+                                LLAMAR MESERO
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    // Estado: CALLING - Mesero en camino
+    if (state === 'calling') {
+        return (
+            <div className="table-page">
+                <div className="background-illustration">
+                    <div className="pattern-row row-normal" style={{ backgroundImage: `url(${bustPattern})` }}></div>
+                    <div className="pattern-row row-flipped" style={{ backgroundImage: `url(${bustPattern})` }}></div>
+                    <div className="pattern-row row-normal" style={{ backgroundImage: `url(${bustPattern})` }}></div>
+                    <div className="pattern-row row-flipped" style={{ backgroundImage: `url(${bustPattern})` }}></div>
+                </div>
+
+                <div className="content-wrapper">
+                    <div className="table-info">
+                        <div className="title-section">
+                            <span className="title-small">MESA</span>
+                            <h1 className="title-main">{table?.code}</h1>
+                            {table?.name && <span className="title-small">{table.name}</span>}
+                        </div>
+
+                        <div className="status-section calling">
+                            <div className="status-icon-small">⏳</div>
+                            <h2 className="status-title">Mesero en camino</h2>
+                            <p className="status-message">
+                                En un momento vendrá un mesero a su mesa.
+                            </p>
+                            <p className="status-message">Gracias por su preferencia.</p>
+                            <p className="status-quote">
+                                "{socratesQuote}" - Sócrates
+                            </p>
+                            <button className="back-button" onClick={handleBackToMenu}>
+                                ← Volver
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    // Estado: ATTENDED - Atendido
     return (
         <div className="table-page">
             <div className="background-illustration">
@@ -162,49 +259,13 @@ function TablePage() {
 
             <div className="content-wrapper">
                 <div className="table-info">
-                    <div className="title-section">
-                        <span className="title-small">MESA</span>
-                        <h1 className="title-main">{table?.code}</h1>
-                        {table?.name && <span className="title-small">{table.name}</span>}
+                    <div className="status-section attended">
+                        <div className="status-icon">✅</div>
+                        <h2 className="status-title">¡Atendido!</h2>
+                        <p className="status-message">
+                            El mesero ya está en camino a su mesa.
+                        </p>
                     </div>
-
-                    {table?.description && (
-                        <p className="table-description">{table.description}</p>
-                    )}
-
-                    {state === 'idle' && (
-                        <div className="action-section">
-                            <button className="call-waiter-button" onClick={handleCallWaiter}>
-                                <span className="button-icon">👋</span>
-                                <span className="button-text">Llamar Mesero</span>
-                            </button>
-                            <p className="action-hint">Presiona el botón para solicitar atención</p>
-                        </div>
-                    )}
-
-                    {state === 'calling' && (
-                        <div className="status-section calling">
-                            <div className="status-icon">⏳</div>
-                            <h2 className="status-title">Mesero en camino</h2>
-                            <p className="status-message">
-                                En un momento vendrá un mesero a su mesa.
-                            </p>
-                            <p className="status-message">Gracias por su preferencia.</p>
-                            <p className="status-quote">
-                                "La salud es la mayor posesión. La alegría es el mayor tesoro. La confianza es el mayor amigo." - Buda
-                            </p>
-                        </div>
-                    )}
-
-                    {state === 'attended' && (
-                        <div className="status-section attended">
-                            <div className="status-icon">✅</div>
-                            <h2 className="status-title">¡Atendido!</h2>
-                            <p className="status-message">
-                                El mesero ya está en camino a su mesa.
-                            </p>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>
