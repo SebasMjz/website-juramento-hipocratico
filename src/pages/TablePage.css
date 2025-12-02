@@ -343,20 +343,6 @@
 }
 
 .menu-button.call-waiter:hover {
-  background: linear-gradient(135deg, #d4a960 0%, #B79347 100%);
-  box-shadow: 0 6px 16px rgba(183, 147, 71, 0.4);
-}
-
-/* Status Icon Small - para el reloj de arena más pequeño */
-.status-icon-small {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-/* Back Button */
-.back-button {
-  background: transparent;
   color: #050A30;
   border: 2px solid #050A30;
   border-radius: 8px;

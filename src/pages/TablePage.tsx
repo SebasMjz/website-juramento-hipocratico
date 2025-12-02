@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import './TablePage.css'
 import bustPattern from '../assets/descarga-removebg-preview.png'
+import menuImage1 from '../assets/juramento menu.jpeg'
+import menuImage2 from '../assets/juramento menu2.jpeg'
 
 type TableData = {
     id: number
@@ -37,6 +39,14 @@ function TablePage() {
     const [table, setTable] = useState<TableData | null>(null)
     const [error, setError] = useState<string>('')
     const [socratesQuote, setSocratesQuote] = useState<string>('')
+
+    // Estados para WiFi y Menú
+    const [showWifiPassword, setShowWifiPassword] = useState(false)
+    const [showMenuImages, setShowMenuImages] = useState(false)
+    const [zoomedImage, setZoomedImage] = useState<string | null>(null)
+    const [hasVisitedInstagram, setHasVisitedInstagram] = useState(false)
+    const [wifiPassword] = useState('Juramento2025!')
+    const instagramUrl = 'https://www.instagram.com/el.juramento.hipocratico'
 
     useEffect(() => {
         if (!tableId || isNaN(tableId)) {
@@ -134,6 +144,25 @@ function TablePage() {
         setState('menu')
     }
 
+    // Handlers para WiFi y Menú
+    const handleWifiClick = () => {
+        if (!hasVisitedInstagram) {
+            // Abrir Instagram en una nueva pestaña
+            window.open(instagramUrl, '_blank')
+            // Marcar como visitado y mostrar la contraseña después de un breve delay
+            setHasVisitedInstagram(true)
+            setTimeout(() => {
+                setShowWifiPassword(true)
+            }, 500)
+        } else {
+            setShowWifiPassword(!showWifiPassword)
+        }
+    }
+
+    const handleImageClick = (imageSrc: string) => {
+        setZoomedImage(imageSrc)
+    }
+
     if (state === 'loading') {
         return (
             <div className="table-page">
@@ -172,18 +201,17 @@ function TablePage() {
         )
     }
 
-    // Estado: MENU - Mostrar botones principales
-    if (state === 'menu') {
-        return (
-            <div className="table-page">
-                <div className="background-illustration">
-                    <div className="pattern-row row-normal" style={{ backgroundImage: `url(${bustPattern})` }}></div>
-                    <div className="pattern-row row-flipped" style={{ backgroundImage: `url(${bustPattern})` }}></div>
-                    <div className="pattern-row row-normal" style={{ backgroundImage: `url(${bustPattern})` }}></div>
-                    <div className="pattern-row row-flipped" style={{ backgroundImage: `url(${bustPattern})` }}></div>
-                </div>
+    return (
+        <div className="table-page">
+            <div className="background-illustration">
+                <div className="pattern-row row-normal" style={{ backgroundImage: `url(${bustPattern})` }}></div>
+                <div className="pattern-row row-flipped" style={{ backgroundImage: `url(${bustPattern})` }}></div>
+                <div className="pattern-row row-normal" style={{ backgroundImage: `url(${bustPattern})` }}></div>
+                <div className="pattern-row row-flipped" style={{ backgroundImage: `url(${bustPattern})` }}></div>
+            </div>
 
-                <div className="content-wrapper">
+            <div className="content-wrapper">
+                {state === 'menu' && (
                     <div className="menu-container">
                         <div className="title-section">
                             <span className="title-small">E L</span>
@@ -192,10 +220,10 @@ function TablePage() {
                         </div>
 
                         <div className="menu-buttons">
-                            <button className="menu-button">
+                            <button className="menu-button" onClick={handleWifiClick}>
                                 CONTRASEÑA WIFI
                             </button>
-                            <button className="menu-button">
+                            <button className="menu-button" onClick={() => setShowMenuImages(true)}>
                                 MENÚ
                             </button>
                             <button className="menu-button call-waiter" onClick={handleCallWaiter}>
@@ -203,23 +231,9 @@ function TablePage() {
                             </button>
                         </div>
                     </div>
-                </div>
-            </div>
-        )
-    }
+                )}
 
-    // Estado: CALLING - Mesero en camino
-    if (state === 'calling') {
-        return (
-            <div className="table-page">
-                <div className="background-illustration">
-                    <div className="pattern-row row-normal" style={{ backgroundImage: `url(${bustPattern})` }}></div>
-                    <div className="pattern-row row-flipped" style={{ backgroundImage: `url(${bustPattern})` }}></div>
-                    <div className="pattern-row row-normal" style={{ backgroundImage: `url(${bustPattern})` }}></div>
-                    <div className="pattern-row row-flipped" style={{ backgroundImage: `url(${bustPattern})` }}></div>
-                </div>
-
-                <div className="content-wrapper">
+                {state === 'calling' && (
                     <div className="table-info">
                         <div className="title-section">
                             <span className="title-small">MESA</span>
@@ -242,32 +256,98 @@ function TablePage() {
                             </button>
                         </div>
                     </div>
-                </div>
-            </div>
-        )
-    }
+                )}
 
-    // Estado: ATTENDED - Atendido
-    return (
-        <div className="table-page">
-            <div className="background-illustration">
-                <div className="pattern-row row-normal" style={{ backgroundImage: `url(${bustPattern})` }}></div>
-                <div className="pattern-row row-flipped" style={{ backgroundImage: `url(${bustPattern})` }}></div>
-                <div className="pattern-row row-normal" style={{ backgroundImage: `url(${bustPattern})` }}></div>
-                <div className="pattern-row row-flipped" style={{ backgroundImage: `url(${bustPattern})` }}></div>
+                {state === 'attended' && (
+                    <div className="table-info">
+                        <div className="status-section attended">
+                            <div className="status-icon">✅</div>
+                            <h2 className="status-title">¡Atendido!</h2>
+                            <p className="status-message">
+                                El mesero ya está en camino a su mesa.
+                            </p>
+                        </div>
+                    </div>
+                )}
             </div>
 
-            <div className="content-wrapper">
-                <div className="table-info">
-                    <div className="status-section attended">
-                        <div className="status-icon">✅</div>
-                        <h2 className="status-title">¡Atendido!</h2>
-                        <p className="status-message">
-                            El mesero ya está en camino a su mesa.
+            {/* Modales */}
+            {showWifiPassword && (
+                <div className="wifi-modal">
+                    <div className="modal-content">
+                        <h2>Contraseña WiFi</h2>
+                        <p className="instagram-note">
+                            ¡Gracias por seguirnos en Instagram!
                         </p>
+                        <div className="wifi-password">
+                            <span className="password-text">{wifiPassword}</span>
+                            <button
+                                className="copy-button"
+                                onClick={() => {
+                                    navigator.clipboard.writeText(wifiPassword)
+                                    alert('Contraseña copiada al portapapeles')
+                                }}
+                            >
+                                📋 Copiar
+                            </button>
+                        </div>
+                        <button
+                            className="close-button"
+                            onClick={() => setShowWifiPassword(false)}
+                        >
+                            Cerrar
+                        </button>
                     </div>
                 </div>
-            </div>
+            )}
+
+            {showMenuImages && (
+                <div className="menu-modal">
+                    <div className="modal-content menu-images-content">
+                        <h2>Nuestro Menú</h2>
+                        <p className="zoom-hint">Haz clic en las imágenes para ampliar</p>
+                        <div className="menu-images">
+                            <img
+                                src={menuImage1}
+                                alt="Menú página 1"
+                                className="menu-image clickable"
+                                onClick={() => handleImageClick(menuImage1)}
+                            />
+                            <img
+                                src={menuImage2}
+                                alt="Menú página 2"
+                                className="menu-image clickable"
+                                onClick={() => handleImageClick(menuImage2)}
+                            />
+                        </div>
+                        <button
+                            className="close-button"
+                            onClick={() => setShowMenuImages(false)}
+                        >
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {zoomedImage && (
+                <div className="zoom-modal" onClick={() => setZoomedImage(null)}>
+                    <div className="zoom-content">
+                        <button
+                            className="zoom-close-button"
+                            onClick={() => setZoomedImage(null)}
+                        >
+                            ✕
+                        </button>
+                        <img
+                            src={zoomedImage}
+                            alt="Menú ampliado"
+                            className="zoomed-image"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
