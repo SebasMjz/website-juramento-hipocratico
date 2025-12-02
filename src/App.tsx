@@ -46,16 +46,15 @@ function App() {
   // Estados de mesa
   const [state, setState] = useState<PageState>(tableId ? 'loading' : 'menu')
   const [table, setTable] = useState<TableData | null>(null)
-  const [error, setError] = useState<string>('')
+
   const [socratesQuote, setSocratesQuote] = useState<string>('')
 
   useEffect(() => {
     if (tableId && !isNaN(tableId)) {
       loadTable()
-    } else if (id) {
-      // Si hay ID pero no es válido
-      setError('ID de mesa inválido')
-      setState('error')
+    } else {
+      // Si no hay ID o es inválido, mostrar menú normal
+      setState('menu')
     }
   }, [tableId])
 
@@ -72,10 +71,17 @@ function App() {
 
       if (fetchError) {
         console.error('Supabase error:', fetchError)
-        throw fetchError
+        // Si hay error de red/db, fallar silenciosamente al menú
+        setState('menu')
+        return
       }
 
-      if (!data) throw new Error('Mesa no encontrada')
+      if (!data) {
+        console.warn('Mesa no encontrada')
+        // Si no existe la mesa, mostrar menú normal
+        setState('menu')
+        return
+      }
 
       setTable(data)
       setState(data.needs_attention ? 'calling' : 'menu')
@@ -114,8 +120,8 @@ function App() {
       }
     } catch (err) {
       console.error('Error loading table:', err)
-      setError(err instanceof Error ? err.message : 'Error al cargar la mesa')
-      setState('error')
+      // En caso de cualquier excepción, asegurar que el usuario vea el menú
+      setState('menu')
     }
   }
 
@@ -192,26 +198,6 @@ function App() {
     )
   }
 
-  if (state === 'error') {
-    return (
-      <div className="app-container">
-        <div className="background-illustration">
-          <div className="pattern-row" style={{ backgroundImage: `url(${bustPattern})` }}></div>
-          <div className="pattern-row" style={{ backgroundImage: `url(${bustPattern})` }}></div>
-          <div className="pattern-row" style={{ backgroundImage: `url(${bustPattern})` }}></div>
-          <div className="pattern-row" style={{ backgroundImage: `url(${bustPattern})` }}></div>
-        </div>
-        <div className="content-wrapper">
-          <div className="error-container">
-            <div className="error-icon">❌</div>
-            <h2 className="error-title">Error</h2>
-            <p className="error-message">{error}</p>
-            <p className="error-hint">Por favor, verifica el código QR e intenta de nuevo.</p>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="app-container">
