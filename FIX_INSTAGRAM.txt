@@ -1,0 +1,26 @@
+// SOLUCIÓN: Reemplaza las líneas 225-280 en App.tsx con este código
+
+const handleWifiClick = () => {
+  if (!hasVisitedInstagram) {
+    // Guardar que ya visito Instagram
+    localStorage.setItem('hasVisitedInstagram', 'true')
+    setHasVisitedInstagram(true)
+
+    // Mostrar la contrasena PRIMERO
+    setShowWifiPassword(true)
+
+    // Abrir Instagram con delay
+    setTimeout(() => {
+      window.open(instagramUrl, '_blank')
+    }, 500)
+  } else {
+    setShowWifiPassword(true)
+  }
+}
+
+const handleImageClick = (imageSrc: string) => {
+  setZoomedImage(imageSrc)
+}
+
+// ELIMINA TODO EL useEffect de visibilitychange (líneas 251-276)
+// NO lo necesitamos, está causando el problema de la página en blanco

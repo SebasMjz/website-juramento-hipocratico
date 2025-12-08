@@ -65,8 +65,25 @@ function App() {
     if (tableId && !isNaN(tableId)) {
       loadTable()
     } else {
-      // Si no hay ID o es inválido, mostrar menú normal
+      // Si no hay ID o es invalido, mostrar menu normal
       setState('menu')
+    }
+  }, [tableId])
+
+  // Detectar cuando el usuario vuelve a la pagina y recargar la mesa si es necesario
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && tableId && !isNaN(tableId)) {
+        // Cuando la pagina se vuelve visible, recargar los datos de la mesa
+        console.log('Pagina visible, recargando mesa...')
+        loadTable()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [tableId])
 
@@ -224,9 +241,17 @@ function App() {
 
   const handleWifiClick = () => {
     if (!hasVisitedInstagram) {
-      // Guardar en localStorage inmediatamente
+      // Guardar el ID de la mesa en localStorage ANTES de abrir Instagram
+      if (tableId) {
+        localStorage.setItem('lastTableId', tableId.toString())
+      }
+
+      // Guardar que ya visitó Instagram
       localStorage.setItem('hasVisitedInstagram', 'true')
       setHasVisitedInstagram(true)
+
+      // Marcar que estamos abriendo Instagram
+      localStorage.setItem('openingInstagram', 'true')
 
       // Mostrar la contraseña PRIMERO para asegurar que la UI responda
       setShowWifiPassword(true)
@@ -239,6 +264,33 @@ function App() {
       setShowWifiPassword(true)
     }
   }
+
+  // Detectar cuando el usuario vuelve de Instagram y recargar si es necesario
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      // Si la página se vuelve visible y acabamos de abrir Instagram
+      if (document.visibilityState === 'visible') {
+        const wasOpeningInstagram = localStorage.getItem('openingInstagram')
+
+        if (wasOpeningInstagram === 'true') {
+          // Limpiar la bandera
+          localStorage.removeItem('openingInstagram')
+
+          // Recargar la página para restaurar el estado
+          // Esto evita que se quede en blanco
+          setTimeout(() => {
+            window.location.reload()
+          }, 100)
+        }
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [])
 
   const handleImageClick = (imageSrc: string) => {
     setZoomedImage(imageSrc)

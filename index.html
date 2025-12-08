@@ -19,7 +19,18 @@
     (function () {
       const userAgent = navigator.userAgent || navigator.vendor || window.opera;
 
-      // Detectar navegadores in-app comunes
+      // Primero verificar si estamos en Safari o Chrome (navegadores BUENOS)
+      const isSafari = /Safari/i.test(userAgent) && !/Chrome/i.test(userAgent) && !/CriOS/i.test(userAgent);
+      const isChrome = /Chrome/i.test(userAgent) || /CriOS/i.test(userAgent);
+      const isFirefox = /Firefox/i.test(userAgent);
+      const isEdge = /Edg/i.test(userAgent);
+
+      // Si estamos en un navegador real (Safari, Chrome, Firefox, Edge), NO hacer nada
+      if (isSafari || isChrome || isFirefox || isEdge) {
+        return; // Salir del script, todo está bien
+      }
+
+      // Detectar navegadores in-app problemáticos
       const isInAppBrowser = (
         // Instagram
         /Instagram/i.test(userAgent) ||
@@ -31,12 +42,15 @@
         /MicroMessenger/i.test(userAgent) ||
         // QQ
         /QQ/i.test(userAgent) ||
-        // Otros navegadores in-app
-        /WebView/i.test(userAgent) ||
-        /wv/i.test(userAgent)
+        // Twitter
+        /Twitter/i.test(userAgent) ||
+        // LinkedIn
+        /LinkedInApp/i.test(userAgent) ||
+        // Otros navegadores in-app genéricos
+        (/WebView/i.test(userAgent) && !isSafari && !isChrome)
       );
 
-      // Si estamos en un navegador in-app, mostrar mensaje para abrir en navegador
+      // Solo mostrar el overlay si estamos en un navegador in-app problemático
       if (isInAppBrowser) {
         const currentUrl = window.location.href;
 
@@ -77,8 +91,8 @@
                   2. Selecciona "Abrir en Safari"
                 </p>
               </div>
-              <button 
-                onclick="window.location.href='${currentUrl}'"
+              <button
+                onclick="this.parentElement.parentElement.remove()"
                 style="
                   background: #B79347;
                   color: white;
@@ -88,19 +102,18 @@
                   border-radius: 8px;
                   cursor: pointer;
                   font-weight: bold;
+                  margin-bottom: 10px;
                 "
               >
-                Intentar de nuevo
+                Continuar de todos modos
               </button>
+              <p style="font-size: 12px; color: #B79347; margin-top: 10px;">
+                (Algunas funciones pueden no funcionar correctamente)
+              </p>
             </div>
           `;
 
         document.body.appendChild(overlay);
-
-        // Intentar abrir en Safari automáticamente (solo funciona en algunos casos)
-        setTimeout(() => {
-          window.location.href = 'x-safari-' + currentUrl;
-        }, 1000);
       }
     })();
   </script>
