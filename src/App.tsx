@@ -3,8 +3,6 @@ import { useParams } from 'react-router-dom'
 import { supabase } from './lib/supabase'
 import './App.css'
 import bustPattern from './assets/descarga-removebg-preview.png'
-import menuImage1 from './assets/juramento menu.jpeg'
-import menuImage2 from './assets/juramento menu2.jpeg'
 
 type TableData = {
   id: number
@@ -40,7 +38,9 @@ function App() {
   const [showMenuImages, setShowMenuImages] = useState(false)
   const [zoomedImage, setZoomedImage] = useState<string | null>(null)
 
-  const [wifiPassword] = useState('sabidulatte')
+  // Estados para datos dinámicos desde menu_media
+  const [wifiPassword, setWifiPassword] = useState<string>('')
+  const [menuImages, setMenuImages] = useState<string[]>([])
 
 
   // Estados de mesa
@@ -56,6 +56,11 @@ function App() {
     tableRef.current = table
   }, [table])
 
+  // Cargar datos del menú (WiFi y imágenes) desde menu_media
+  useEffect(() => {
+    loadMenuData()
+  }, [])
+
   useEffect(() => {
     if (tableId && !isNaN(tableId)) {
       loadTable()
@@ -64,6 +69,50 @@ function App() {
       setState('menu')
     }
   }, [tableId])
+
+  const loadMenuData = async () => {
+    try {
+
+      // Obtener todos los registros de menu_media
+      const { data, error } = await supabase
+        .from('menu_media')
+        .select('description, image_url')
+        .order('id', { ascending: true })
+
+      if (error) {
+        console.error('Error loading menu data:', error)
+        // Usar valores por defecto si hay error
+        setWifiPassword('sabidulatte')
+        setMenuImages([])
+        return
+      }
+
+      if (data && data.length > 0) {
+        // Buscar la contraseña WiFi (primer registro con description)
+        const wifiRecord = data.find(item => item.description)
+        if (wifiRecord?.description) {
+          setWifiPassword(wifiRecord.description)
+        } else {
+          setWifiPassword('sabidulatte') // Valor por defecto
+        }
+
+        // Obtener todas las imágenes
+        const images = data
+          .filter(item => item.image_url)
+          .map(item => item.image_url as string)
+
+        setMenuImages(images)
+      } else {
+        // Si no hay datos, usar valores por defecto
+        setWifiPassword('sabidulatte')
+        setMenuImages([])
+      }
+    } catch (err) {
+      console.error('Error fetching menu data:', err)
+      setWifiPassword('sabidulatte')
+      setMenuImages([])
+    }
+  }
 
   const loadTable = async () => {
     try {
@@ -348,21 +397,24 @@ function App() {
         <div className="menu-modal">
           <div className="modal-content menu-images-content">
             <h2>Nuestro Menú</h2>
-            <p className="zoom-hint">Haz clic en las imágenes para ampliar</p>
-            <div className="menu-images">
-              <img
-                src={menuImage1}
-                alt="Menú página 1"
-                className="menu-image clickable"
-                onClick={() => handleImageClick(menuImage1)}
-              />
-              <img
-                src={menuImage2}
-                alt="Menú página 2"
-                className="menu-image clickable"
-                onClick={() => handleImageClick(menuImage2)}
-              />
-            </div>
+            {menuImages.length > 0 ? (
+              <>
+                <p className="zoom-hint">Haz clic en las imágenes para ampliar</p>
+                <div className="menu-images">
+                  {menuImages.map((imageUrl, index) => (
+                    <img
+                      key={index}
+                      src={imageUrl}
+                      alt={`Menú página ${index + 1}`}
+                      className="menu-image clickable"
+                      onClick={() => handleImageClick(imageUrl)}
+                    />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="no-menu-message">No hay imágenes del menú disponibles en este momento.</p>
+            )}
             <button
               className="close-button"
               onClick={() => setShowMenuImages(false)}

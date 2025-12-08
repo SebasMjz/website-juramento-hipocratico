@@ -1,15 +1,111 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/app_icon.png" />
-    <link rel="apple-touch-icon" href="/app_icon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Menú digital para El Juramento Hipocrático - Contraseña WiFi y gestión de mesas" />
-    <title>El Juramento Hipocrático - Menú Digital</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="/app_icon.png" />
+  <link rel="apple-touch-icon" href="/app_icon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Menú digital para El Juramento Hipocrático - Contraseña WiFi y gestión de mesas" />
+  <title>El Juramento Hipocrático - Menú Digital</title>
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <!-- Script para forzar apertura en navegador (solución para bug de QR en iPhone) -->
+  <script>
+    // Detectar si estamos en un navegador in-app (como el lector de QR de iPhone)
+    (function () {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+      // Detectar navegadores in-app comunes
+      const isInAppBrowser = (
+        // Instagram
+        /Instagram/i.test(userAgent) ||
+        // Facebook
+        /FBAN|FBAV/i.test(userAgent) ||
+        // Line
+        /Line/i.test(userAgent) ||
+        // WeChat
+        /MicroMessenger/i.test(userAgent) ||
+        // QQ
+        /QQ/i.test(userAgent) ||
+        // Otros navegadores in-app
+        /WebView/i.test(userAgent) ||
+        /wv/i.test(userAgent)
+      );
+
+      // Si estamos en un navegador in-app, mostrar mensaje para abrir en navegador
+      if (isInAppBrowser) {
+        const currentUrl = window.location.href;
+
+        // Crear overlay con instrucciones
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 10, 48, 0.95);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            padding: 20px;
+            text-align: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          `;
+
+        overlay.innerHTML = `
+            <div style="max-width: 400px;">
+              <h2 style="color: #B79347; margin-bottom: 20px; font-size: 24px;">
+                ⚠️ Abrir en Navegador
+              </h2>
+              <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+                Para una mejor experiencia, por favor abre esta página en tu navegador (Safari o Chrome).
+              </p>
+              <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                <p style="font-size: 14px; margin-bottom: 10px;">
+                  <strong>En iPhone:</strong>
+                </p>
+                <p style="font-size: 13px; line-height: 1.5;">
+                  1. Toca el botón de compartir (⋯ o ⬆️)<br>
+                  2. Selecciona "Abrir en Safari"
+                </p>
+              </div>
+              <button 
+                onclick="window.location.href='${currentUrl}'"
+                style="
+                  background: #B79347;
+                  color: white;
+                  border: none;
+                  padding: 15px 30px;
+                  font-size: 16px;
+                  border-radius: 8px;
+                  cursor: pointer;
+                  font-weight: bold;
+                "
+              >
+                Intentar de nuevo
+              </button>
+            </div>
+          `;
+
+        document.body.appendChild(overlay);
+
+        // Intentar abrir en Safari automáticamente (solo funciona en algunos casos)
+        setTimeout(() => {
+          window.location.href = 'x-safari-' + currentUrl;
+        }, 1000);
+      }
+    })();
+  </script>
+
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>
