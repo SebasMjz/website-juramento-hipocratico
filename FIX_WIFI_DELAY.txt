@@ -1,0 +1,23 @@
+// REEMPLAZA la función handleWifiClick (líneas 242-266) con este código:
+
+const handleWifiClick = () => {
+  if (!hasVisitedInstagram) {
+    // Guardar que ya visito Instagram
+    localStorage.setItem('hasVisitedInstagram', 'true')
+    setHasVisitedInstagram(true)
+
+    // Redirigir a Instagram directamente (evita about:blank)
+    window.location.href = instagramUrl
+
+    // NO mostrar la contrasena inmediatamente
+    // El usuario volvera y entonces la vera
+  } else {
+    // Si ya visito Instagram, mostrar la contrasena con delay de 2 segundos
+    setTimeout(() => {
+      setShowWifiPassword(true)
+    }, 2000)
+  }
+}
+
+// IMPORTANTE: También ELIMINA el useEffect de visibilitychange (líneas 268-290)
+// Ya no lo necesitamos porque no estamos usando window.open
